@@ -40,7 +40,7 @@ class TransferController extends Controller
       $transfer->status = 'pending';
 
       $transfer->save();
-
+      $this->effectTransfer($transfer);
       return json_encode(['response' => 'Transfer Request Accepted']);
     } else {
       return json_encode(['response' => 'Invalid Account Number']);
