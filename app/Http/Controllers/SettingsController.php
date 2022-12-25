@@ -10,8 +10,7 @@ class SettingsController extends Controller
   //
   public function store (Request $request) {
     $account = User::where('account_no', $request->account_no)->get('account_no');
-    $dara = json_decode($account, true);
-    if (count($account) == 0/* || $data[0]['account_no'] == 'none'*/) {
+    if (count($account) == 0) {
       return json_encode(['status' => 'You must have an account to enjoy this feature']);
     } else {
       $settings = Settings::find($request->account_no);
