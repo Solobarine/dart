@@ -1,0 +1,16 @@
+http://localhost:8000
+POST /api/user/signup
+Content-Type: application/json
+'{
+  "first_name": "Solomon",
+  "last_name": "Barine",
+  "email": "solobarine@gmail.com",
+  "password": "desructo47",
+  "phone_no": "09032083144",
+  "country": "Nigeria",
+  "state": "Rivers",
+  "city": "Port-Harcourt",
+  "address": "No 5 Orluwene Avenue",
+  "date_of_birth": "07-10-1998",
+  "sex": "Male"
+}'
