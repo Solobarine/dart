@@ -27,7 +27,7 @@ class TransferController extends Controller
       $transfer = new Transfer;
 
       $transfer->amount = $request->input('amount');
-      $transfer->transaction_id = $this->generateTransactionId;
+      $transfer->transaction_id = $this->generateTransactionId();
       $transfer->sender_first_name = $request->input('sender_first_name');
       $transfer->sender_last_name = $request->input('sender_last_name');
       $transfer->sender_account_no = $request->input('sender_account_no');
@@ -40,17 +40,17 @@ class TransferController extends Controller
       $transfer->status = 'pending';
 
       $transfer->save();
-
+      $this->effectTransfer($transfer);
       return json_encode(['response' => 'Transfer Request Accepted']);
     } else {
       return json_encode(['response' => 'Invalid Account Number']);
-    }
+   }
   }
 
   public function update ($transaction_id) {
     $transfer = Transfer::where('transaction_id', $transaction_id)->get();
 
-    $transfer['status'] = 'success';
+    $transfer->status = 'success';
 
     $transfer->save();
 
@@ -60,11 +60,11 @@ class TransferController extends Controller
   public function generateTransactionId () {
     $id_template = 'TSF-';
     $unique_portion = rand(10000000, 99999999);
-    $transaction_id = $id_template + strval($unique_portion);
+    $transaction_id = $id_template.strval($unique_portion);
     $find_transaction_id = Transfer::where('transaction_id', $transaction_id)->get();
 
     if ($find_transaction_id != null) {
-      [TransferController::class, 'generateTransactionId'];
+      $this->generateTransactionId();
     }
     return $transaction_id;
   }
@@ -93,7 +93,7 @@ class TransferController extends Controller
 
           $user->save();
           $receiver->save();
-          $message = new Message();
+          $message = new Message;
           $messages = [
             'first_name' => $user->first_name,
             'last_name' => $user->last_name,

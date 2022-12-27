@@ -20,6 +20,10 @@ use App\Http\Controllers\UserController;
 
 /* USER ROUTES */
 
+Route::get('/', function () {
+    return view('welcome');
+});
+
 Route::get('/users', [UserController::class, 'index']);
 
 Route::post('/user/select', [UserController::class, 'showOne']);
@@ -51,7 +55,7 @@ Route::post('/account/deposit/create', [DepositController::class, 'create']);
 /* TRASNSFER ROUTES */
 Route::get('/account/transfer', [TransferController::class, 'show']);
 
-Route::post('/account/transfer', [TransferController::class, 'store']);
+Route::post('/account/transfer', [TransferController::class, 'create']);
 
 /* CHANGR THRMES */
 Route::post('/dashboard/settings/themes', [SettingsController::class, 'store']);
