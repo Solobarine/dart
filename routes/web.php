@@ -20,6 +20,10 @@ use App\Http\Controllers\UserController;
 
 /* USER ROUTES */
 
+Route::get('/', function () {
+    return view('welcome');
+});
+
 Route::get('/users', [UserController::class, 'index']);
 
 Route::post('/user/select', [UserController::class, 'showOne']);
