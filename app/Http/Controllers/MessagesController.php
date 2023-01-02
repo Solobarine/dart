@@ -38,28 +38,30 @@ class MessagesController extends Controller
       $message = new Message;
       if ($transaction_type == 'deposit') { 
         $message->description = 'Deposit';
-        $message->receiver_first_name = $transaction_details->first_name;
-        $message->receiver_account_no = $transaction_details->account_no;
-        $message->message = 'Dear ' + $transaction_details->first_name + ', your deposit request with transaction id of ' + $transaction_details->transaction_id + 'is successful and your account has been credited with $' + $transaction_details->topup + '. Your current balance is $' + $transaction_details->balance + '. Thank you for choosing us';
+        $message->reciever_first_name = $transaction_details['first_name'];
+        $message->receiver_last_name = $transaction_details['last_name'];
+        $message->reciever_account_no = $transaction_details['account_no'];
+        $message->message = 'Dear '.$transaction_details['first_name'].', your deposit request with transaction id of '.$transaction_details['transaction_id'].' is successful and your account has been credited with $'.$transaction_details['amount'].'. Your current balance is $'.$transaction_details['balance'].'. Thank you for choosing us';
         $message->sender = 'Dart';
+        $message->save();
       } else {
         $message->description = 'Transfer';
-        $message->receiver_first_name = $transaction_details->first_name;
-        $message->receiver_last_name = $transaction_details->last_name;
-        $message->receiver_account_no = $transaction_details->account_no;
-        $message->message = 'Hello ' + $transaction_details->first_name + '. Your transfer of ' + $transaction_details->amount + ' to' + $transaction_details->receiver_first_name + '' +  $transaction_details->receiver_last_name + ' is successful. Thank you for choosing us.';
+        $message->reciever_first_name = $transaction_details['first_name'];
+        $message->receiver_last_name = $transaction_details['last_name'];
+        $message->reciever_account_no = $transaction_details['account_no'];
+        $message->message = 'Hello '.$transaction_details['first_name'].'. Your transfer of '.$transaction_details['amount'].' to'.$transaction_details['receiver_first_name'].' '.$transaction_details['receiver_last_name'].' is successful. Thank you for choosing us.';
         $message->sender = 'Dart';
+        $message->save();
 
         $message_2 = new Message;
         $message_2->description = 'Transfer';
-        $message_2->receiver_first_name = $transaction_details->receiver_first_name;
-        $message_2->receiver_last_name = $transaction_details->receiver_last_name;
-        $message_2->receiver_account_no = $transaction_details->receiver_account_no;
-        $message_2->message = 'Hello ' + $transaction_details->receiver_first_name + '. Your acount has been credited with $' + $transaction_details->amount + ' by ' + $transaction_details->first_name + ' ' + $transaction_details->last_name + '. Thank you for choosing us.';
+        $message_2->reciever_first_name = $transaction_details['receiver_first_name'];
+        $message_2->receiver_last_name = $transaction_details['receiver_last_name'];
+        $message_2->reciever_account_no = $transaction_details['receiver_account_no'];
+        $message_2->message = 'Hello '.$transaction_details['receiver_first_name'].'. Your acount has been credited with $'.$transaction_details['amount'].' by '.$transaction_details['first_name'].' '.$transaction_details['last_name'].'. Thank you for choosing us.';
         $message_2->sender = 'Dart';
         $message_2->save();
       }
-      $message->save();
     }
 
     /**

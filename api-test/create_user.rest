@@ -1,16 +1,5 @@
-http://localhost:8000
-POST /api/user/signup
-Content-Type: application/json
-'{
-  "first_name": "Solomon",
-  "last_name": "Barine",
-  "email": "solobarine@gmail.com",
-  "password": "desructo47",
-  "phone_no": "09032083144",
-  "country": "Nigeria",
-  "state": "Rivers",
-  "city": "Port-Harcourt",
-  "address": "No 5 Orluwene Avenue",
-  "date_of_birth": "07-10-1998",
-  "sex": "Male"
-}'
+curl -X POST -H 'Content-Type: application/json' -d '{"first_name": "Alice", "last_name": "Spencer", "email": "alicesp@gmail.com","password": "qwerty", "phone_no": "06044553212", "country": "Bulgaria", "state": "Vrit", "city": "Sofia", "address": "No 3 Vitali Estate", "date_of_birth": "23-06-1993", "gender": "Female"}' http://localhost:8000/user/signup
+
+curl -X POST -H 'Content-Type: applicatiion/json' -d '{"first_name": "Solomon", "last_name": "Barine", "pin": 5693, "accountNo": "2275723559"}' http://localhost:8000/account/create
+
+curl -X POST -H 'Content-Type: applicatiion/json' -d '{"amount": 3000,  "accountNo": "2275723559"}' http://localhost:8000/account/deposit/create

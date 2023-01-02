@@ -6,6 +6,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TransferController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Models\UserProfile;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,3 +60,8 @@ Route::post('/account/transfer', [TransferController::class, 'create']);
 
 /* CHANGR THRMES */
 Route::post('/dashboard/settings/themes', [SettingsController::class, 'store']);
+
+/*  UPLOAD PROFILE PICTURE */
+Route::post('/dashboard/pictures', [UserProfile::class, 'create']);
+
+Route::get('/dashboard/pictures', [UserProfile::class, 'show']);

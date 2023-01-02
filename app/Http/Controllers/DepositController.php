@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Deposit;
-use App\Models\Message;
 use App\Models\User;
+use App\Http\Controllers\MessagesController;
 
 class DepositController extends Controller
 {
@@ -31,13 +31,15 @@ class DepositController extends Controller
       $deposit->status = 'pending';
       $deposit->account_no = $request->accountNo;
       $deposit->save();
-      $this->effectDeposit($deposit);
+      $summary = json_decode($deposit, true);
+      $deb = Deposit::where('transaction_id', $deposit->transaction_id)->first();
+      $this->effectDeposit($summary);
       return json_encode(['response' => 'Your transaction has been accepted. Please wait while we process yor transaction']);
     }
   }
 
   public function update($transaction_id) {
-    $deposit = Deposit::where('transaction_id', $transaction_id)->get();
+    $deposit = Deposit::where('transaction_id', $transaction_id)->first();
 
     $deposit->status = 'success';
 
@@ -50,36 +52,38 @@ class DepositController extends Controller
     $id_template = 'DPT-';
     $unique_portion = rand(10000000, 99999999);
     $transaction_id = $id_template.strval($unique_portion) ;
-    $find_transaction_id = Deposit::where('transaction_id', $transaction_id)->get();
+    $find_transaction_id = Deposit::where('transaction_id', $transaction_id)->first();
 
-    if (count($find_transaction_id) >= 1) {
+    if ($find_transaction_id != null) {
       $this->generateTransactionId();
     }
     return $transaction_id;
   }
 
   public function effectDeposit ($deposit_summary) {
-    $user_account_no = $deposit_summary->account_no;
-    $user = User::where('account_no', $user_account_no)->get();
-    $topup = $deposit_summary->amount;
-    if (count($user) == 0) {
-      $deposit_summary->status = 'rejected';
-      $deposit_summary->save();
+    $user_account_no = $deposit_summary['account_no'];
+    $user = User::where('account_no', $user_account_no)->first();
+    $topup = $deposit_summary['amount'];
+    if ($user == null) {
+      $desc = Deposit::where('transaction_id', $deposit_summary['transaction_id'])->first();
+      $desc->status = 'rejected';
+      $desc->save();
       return json_encode(['response' => 'Transaction Rejected']);
-    } else { 
-      $user->balance = $user->balance + $topup;
-      $this->update($deposit_summary->transaction_id);
+    } else {
+      $balance = $user->balance;
+      $user->balance = $balance + $topup;
+      $this->update($deposit_summary['transaction_id']);
       $user->save();
-      $message = new Message();
+      $message = new MessagesController;
       $messages = [
         'first_name' => $user->first_name,
         'last_name' => $user->last_name,
         'amount' => $topup,
-        'transaction_id' => $deposit_summary->transaction_id,
-        'account_no' => $deposit_summary->account_no,
+        'transaction_id' => $deposit_summary['transaction_id'],
+        'account_no' => $deposit_summary['account_no'],
         'balance' => $user->balance
       ];
-      $message->show($messages, 'deposit');
+      $message->store($messages, 'deposit');
       return json_encode(['response' => 'Deposit Successful']);
     }
   }

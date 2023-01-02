@@ -12,8 +12,8 @@ class TransferController extends Controller
 {
   //
   public function show (Request $request) {
-    $transfer_history = Transfer::where('account_no', $request->input('account_no'))->get();
-    if (count($transfer_history) == 0) {
+    $transfer_history = Transfer::where('account_no', $request->input('account_no'))->first();
+    if ($transfer_history == null) {
       return 'No Transaction History';
     } else {
       return $transfer_history;
@@ -23,7 +23,7 @@ class TransferController extends Controller
   public function create (Request $request) {
     $user = User::where('account_no', $request->input('sender_account_no'))->get(['first_name', 'last_name']);
     $user_2 = User::where('account_no', $request->input('receiver_account_no'))->get(['first_name', 'last_name']);
-    if (count($user) != 0 && count($user_2) != 0) {
+    if ($user != null && $user_2 != null) {
       $transfer = new Transfer;
 
       $transfer->amount = $request->input('amount');
@@ -32,23 +32,24 @@ class TransferController extends Controller
       $transfer->sender_last_name = $request->input('sender_last_name');
       $transfer->sender_account_no = $request->input('sender_account_no');
       $transfer->card_no = $request->input('card_no');
-      $transfer->pin = $request->input('pin');
       $transfer->receiver_first_name = $request->input('receiver_first_name');
       $transfer->receiver_last_name = $request->input('receiver_last_name');
       $transfer->receiver_account_no = $request->input('receiver_account_no');
-      $transfer->description = $request->input('description');
       $transfer->status = 'pending';
+      $invoice = json_decode($transfer, true);
+      $invoice['pin'] = $request->pin;
 
       $transfer->save();
-      $this->effectTransfer($transfer);
-      return json_encode(['response' => 'Transfer Request Accepted']);
+      $this->effectTransfer($invoice);
+      return $invoice;
+      /*return json_encode(['response' => 'Transfer Request Accepted']);*/
     } else {
       return json_encode(['response' => 'Invalid Account Number']);
    }
   }
 
   public function update ($transaction_id) {
-    $transfer = Transfer::where('transaction_id', $transaction_id)->get();
+    $transfer = Transfer::where('transaction_id', $transaction_id)->first();
 
     $transfer->status = 'success';
 
@@ -61,7 +62,7 @@ class TransferController extends Controller
     $id_template = 'TSF-';
     $unique_portion = rand(10000000, 99999999);
     $transaction_id = $id_template.strval($unique_portion);
-    $find_transaction_id = Transfer::where('transaction_id', $transaction_id)->get();
+    $find_transaction_id = Transfer::where('transaction_id', $transaction_id)->first();
 
     if ($find_transaction_id != null) {
       $this->generateTransactionId();
@@ -70,38 +71,43 @@ class TransferController extends Controller
   }
 
   public function effectTransfer ($transfer_data) {
-    $sender_account_no = $transfer_data->sender_account_no;
-    $receiver_account_no = $transfer_data->receiver_account_no;
+    $sender_account_no = $transfer_data['sender_account_no'];
+    $receiver_account_no = $transfer_data['receiver_account_no'];
 
-    $query_sender = Account::where('account_no', $sender_account_no)->get();
-    $query_receiver = Account::where('account_no', $receiver_account_no)->get();
+    $query_sender = Account::where('account_no', $sender_account_no)->first();
+    $query_receiver = User::where('account_no', $receiver_account_no)->first();
 
-    if (count($query_sender) ==  0 || count($query_receiver) == 0 || $query_sender->card_no == $transfer_data->card_no || $transfer_data->pin != $query_sender->pin) {
-      $transfer_data->status = 'failed';
-      $transfer_data->save();
+    if ($query_sender ==  null || $query_receiver == null || $query_sender->card_no != $transfer_data['card_no'] || $transfer_data['pin'] != $query_sender->pin) {
+      $cancel = Transfer::where('transaction_id', $transfer_data['transaction_id'])->first();
+      $cancel->status = 'failed1';
+      $cancel->save();
       return json_encode(['response' => 'Transaction Failed']);
     } else {
-      $user = User::where('account_no', $sender_account_no)->get(['first_name', 'last_name', 'balance']);
-      $receiver = User::where('account_no', $receiver_account_no)->get(['first_name', 'last_name', 'balance']);
-      if ($user->balance < $transfer_data->amount) {
-        $transfer_data->status = 'failed';
-        $transfer_data->save();
+      $user = User::where('account_no', $sender_account_no)->first();
+      $receiver = User::where('account_no', $receiver_account_no)->first();
+      if ($user->balance < $transfer_data['amount']) {
+        $cancel_transfer = Transfer::where('transaction_id', $transfer_data['transaction_id'])->first();
+        $cancel_transfer->status = 'failed2';
+        $cancel_transfer->save();
         return json_encode(['response' => 'Transaction Failed. Insufficient Funds']);
         } else {
-          $user->balance = $user->balance - $transfer_data->amount;
-          $receiver->balance = $receiver->balance + $transfer_data->amount;
+          $user->balance = $user->balance - $transfer_data['amount'];
+          $receiver->balance = $receiver->balance + $transfer_data['amount'];
+          $this->update($transfer_data['transaction_id']);
 
           $user->save();
           $receiver->save();
-          $message = new Message;
+          $message = new MessagesController;
           $messages = [
             'first_name' => $user->first_name,
             'last_name' => $user->last_name,
             'account_no' => $user->account_no,
+            'amount' => $transfer_data['amount'],
             'receiver_first_name' => $receiver->first_name,
-            'receiver_last_name' => $receiver->last_name
+            'receiver_last_name' => $receiver->last_name,
+            'receiver_account_no' => $receiver_account_no
           ]; 
-          $message->show($messages, 'transfer');
+          $message->store($messages, 'transfer');
           return json_encode(['response' => 'Transaction Successful. Thank you for choosing us']);
         }
     }

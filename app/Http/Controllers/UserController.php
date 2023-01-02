@@ -9,6 +9,7 @@ use App\Models\Account;
 use App\Models\Deposit;
 use App\Models\Settings;
 use App\Models\Transfer;
+use App\Models\UserProfile;
 use Validator;
 
 class UserController extends Controller
@@ -21,21 +22,24 @@ class UserController extends Controller
   }
   
   public function show (Request $request) {
-    $user = User::where('password', $request->input('password'))->where('email', $request->input('email'))->get(['first_name', 'last_name', 'balance', 'account_no']);
+    $user = User::where('password', $request->input('password'))->where('email', $request->input('email'))->get(['first_name', 'last_name', 'balance', 'account_no', 'country', 'address', 'email', 'state']);
     $data = json_decode($user, true);
     if (count($user) == 0) {
-      return json_encode(['err' => 'Incorrect Email or Password']);
+      return json_encode(['res' => 'Incorrect Email or Password']);
     } else {
       $account = Account::where('account_no', $data[0]['account_no'])->get();
       $deposit = Deposit::where('account_no', $data[0]['account_no'])->get();
       $transfer = Transfer::where('sender_account_no', $data[0]['account_no'])->get();
-      $settings = Settings::where('account_no', $data[0]['account_no'])->get();;
-      return json_encode([
+      $settings = Settings::where('account_no', $data[0]['account_no'])->get();
+      $image = UserProfile::where('account_no', $data[0]['account_no'])->get();
+      return json_encode(['res' => [
         'userDetails' => $user,
         'accounts' => $account,
         'deposits' => $deposit,
         'transfers' => $transfer,
-        'settings' => $settings
+        'settings' => $settings,
+        'image' => $image
+      ]
       ]);
     }
   }
@@ -72,12 +76,14 @@ class UserController extends Controller
     $deposit = Deposit::where('account_no', $user->account_no)->get();
     $transfer = Transfer::where('account_no', $user->account_no)->get();
     $settings = Settings::where('account_no', $user->account_no)->get();
+    $image = UserProfile::where('account_no', $user->account_no)->get();
     return json_encode([
       'userDetails' => $user,
       'accounts' => $account,
       'deposits' => $deposit,
       'transfers' => $transfer,
-      'settings' => $settings
+      'settings' => $settings,
+      'image' => $image
     ]);
     } else {
       return json_encode(['err' => 'Invalid Email or Password']);

@@ -16,13 +16,14 @@ return new class extends Migration
         Schema::create('settings', function (Blueprint $table) {
           $table->id();
           $table->string('account_no');
-          $table->string('background_color_1')->default('#e1f2f8');
-          $table->string('background_color_2')->default('#f9f3fc');
+          $table->string('background_color_1')->default('#59bdbb');
+          $table->string('background_color_2')->default('#fc9790');
           $table->string('background_color_3')->default('#f2f7f6');
           $table->string('background_color_4')->default('#ede');
+          $table->string('background_color_5')->default('#fff');
           $table->string('color_1')->default('#427e7a');
-          $table->string('color_2')->default('#1c3a3e');
-          $table->string('color_3')->default('#b1babe');
+          $table->string('color_2')->default('#ede');
+          $table->string('color_3')->default('#000');
           $table->timestamps();
         });
     }
