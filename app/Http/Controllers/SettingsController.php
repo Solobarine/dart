@@ -13,7 +13,7 @@ class SettingsController extends Controller
     if (count($account) == 0) {
       return json_encode(['status' => 'You must have an account to enjoy this feature']);
     } else {
-      $settings = Settings::find($request->account_no);
+      $settings = Settings::where($request->account_no)->first();
       if ($settings == null) {
       $settings = new Settings;
       } else {
@@ -42,6 +42,15 @@ class SettingsController extends Controller
       }
       $settings->save();
       return json_encode(['status' => 'Theme Changed', 'settings' => $settings]);
+    }
+  }
+
+  public function show (Request $request) {
+    $theme = Settings::where('account_no', $request->account_no)->first();
+    if ($theme == null) {
+      return json_encode(['res' => 'No Saved Themes']);
+    } else {
+      return $theme;
     }
   }
 }

@@ -58,8 +58,10 @@ Route::get('/account/transfer', [TransferController::class, 'show']);
 
 Route::post('/account/transfer', [TransferController::class, 'create']);
 
-/* CHANGR THRMES */
+/* CHANGE THEMES */
 Route::post('/dashboard/settings/themes', [SettingsController::class, 'store']);
+
+Route::get('/dashboard/settings/themes', [SettingsController::class, 'show']);
 
 /*  UPLOAD PROFILE PICTURE */
 Route::post('/dashboard/pictures', [UserProfile::class, 'create']);
